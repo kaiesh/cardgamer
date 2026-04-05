@@ -1,0 +1,137 @@
+/* =====================================================
+   Zone Builder Canvas Styles
+   ===================================================== */
+
+.zone-builder {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+}
+
+.zb-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.zb-toolbar h2 { flex: 1; }
+
+.zb-canvas-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow: hidden;
+}
+
+.zb-canvas {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    aspect-ratio: 16 / 10;
+    background: radial-gradient(ellipse at center, #1a5c35 0%, #0d3820 70%, #0a2e19 100%);
+    border-radius: 40px;
+    border: 8px solid #2a1a0e;
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5);
+    overflow: hidden;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.zb-felt {
+    position: absolute;
+    inset: 0;
+}
+
+.zb-zone {
+    position: absolute;
+    border: 2px dashed rgba(255,255,255,0.4);
+    border-radius: 6px;
+    cursor: move;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow 0.15s;
+}
+.zb-zone:hover {
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+}
+
+.zb-zone-player {
+    border-style: dotted;
+}
+
+.zb-zone-label {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.zb-badge {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: var(--warning);
+    color: #000;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 6px;
+    pointer-events: none;
+}
+
+.zb-zone-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    cursor: se-resize;
+    background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.5) 50%);
+    border-radius: 0 0 4px 0;
+}
+
+.zb-draw-preview {
+    position: absolute;
+    border: 2px dashed var(--primary);
+    background: rgba(59,130,246,0.1);
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Zone dialog */
+.zone-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.zone-dialog-content {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: var(--shadow);
+}
+.zone-dialog-content h3 {
+    margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+    .zb-toolbar { flex-wrap: wrap; }
+    .zb-canvas { border-radius: 20px; border-width: 4px; }
+}

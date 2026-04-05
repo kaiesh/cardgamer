@@ -1,0 +1,411 @@
+/* =====================================================
+   Game Table & Card Styles
+   ===================================================== */
+
+/* Game layout */
+.game-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.game-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 10;
+}
+.topbar-left, .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.game-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.game-table-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.game-sidebar {
+    width: 280px;
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+.sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+}
+.sidebar-tab {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.sidebar-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+.sidebar-content { flex: 1; overflow-y: auto; }
+
+/* Table felt */
+.table-felt {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    aspect-ratio: 16 / 10;
+    background: radial-gradient(ellipse at center, #1a5c35 0%, #0d3820 70%, #0a2e19 100%);
+    border-radius: 40px;
+    border: 8px solid #2a1a0e;
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.table-center-info {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5;
+}
+.lobby-waiting { color: rgba(255,255,255,0.7); }
+.lobby-waiting h3 { margin-bottom: 8px; }
+.players-list { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
+.game-paused, .game-closed { color: rgba(255,255,255,0.7); }
+
+/* Cards */
+.card {
+    width: 70px;
+    height: 100px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    flex-shrink: 0;
+}
+.card:hover {
+    transform: translateY(-4px);
+    z-index: 100 !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+.card.dragging {
+    opacity: 0.5;
+}
+
+.card-face-up {
+    background: white;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.card-face {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 4px;
+}
+.card-corner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+.card-corner-bottom {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    transform: rotate(180deg);
+}
+.card-rank { font-size: 0.85rem; font-weight: 700; }
+.card-suit { font-size: 0.7rem; }
+.card-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+}
+
+.card-face-down {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.card-back {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #1e3a5f 25%, #163050 25%, #163050 50%, #1e3a5f 50%, #1e3a5f 75%, #163050 75%);
+    background-size: 12px 12px;
+    border: 2px solid #0f2640;
+}
+
+.card-peeking {
+    background: white;
+    border: 2px solid var(--warning);
+    box-shadow: 0 0 10px rgba(245,158,11,0.3);
+}
+.card-peek-face { opacity: 0.85; }
+.peek-icon {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 0.9rem;
+}
+.peek-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.4);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mark-dot {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    background: var(--warning);
+    border-radius: 50%;
+}
+
+.card-removed {
+    opacity: 0.4;
+    filter: grayscale(0.5);
+    pointer-events: none;
+}
+
+.card-ghost {
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.drop-target {
+    box-shadow: 0 0 0 3px var(--primary) !important;
+}
+
+/* Hand area */
+.game-hand-area {
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 130px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+.hand {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 0 20px;
+    flex: 1;
+    justify-content: center;
+    overflow-x: auto;
+    min-height: 100px;
+}
+.hand .card {
+    transform-origin: bottom center;
+}
+.hand-empty-msg {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 30px;
+    text-align: center;
+    width: 100%;
+}
+
+/* Chip tray */
+.chip-tray-container {
+    flex-shrink: 0;
+}
+.chip-tray {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.chip-balance {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+}
+.chip-icon { font-size: 1.2rem; }
+.chip-count { font-weight: 700; font-size: 1.1rem; color: var(--warning); }
+
+/* Zones on table */
+.zone-el {
+    position: absolute;
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+.zone-el.zone-drop-target {
+    border-color: var(--primary);
+    border-style: solid;
+    box-shadow: 0 0 12px rgba(59,130,246,0.3);
+}
+.zone-label {
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+    pointer-events: none;
+}
+.zone-cards {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 20px 6px 6px;
+}
+.zone-stacked .zone-cards {
+    justify-content: center;
+    align-items: center;
+}
+.zone-spread .zone-cards {
+    justify-content: flex-start;
+    overflow-x: auto;
+}
+
+/* Player seats */
+.player-seat-el {
+    z-index: 5;
+}
+.player-seat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 80px;
+}
+.player-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+.player-name {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 600;
+    text-align: center;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.player-chips {
+    font-size: 0.7rem;
+    color: var(--warning);
+    font-weight: 600;
+}
+.player-hand-backs {
+    display: flex;
+    justify-content: center;
+    margin-top: 2px;
+}
+.mini-card {
+    width: 18px;
+    height: 26px;
+    background: linear-gradient(135deg, #1e3a5f, #163050);
+    border: 1px solid #0f2640;
+    border-radius: 2px;
+    margin-left: -6px;
+    transform-origin: bottom center;
+}
+.mini-card:first-child { margin-left: 0; }
+
+.seat-drop-target .player-avatar {
+    box-shadow: 0 0 12px var(--primary);
+    border-color: var(--primary);
+}
+.disconnected-badge {
+    font-size: 0.65rem;
+    color: var(--danger);
+    background: rgba(0,0,0,0.5);
+    padding: 1px 6px;
+    border-radius: 8px;
+}
+
+/* Chip pots on table */
+.chip-pot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.chip-pot-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+.chip-pot-amount { font-size: 1rem; font-weight: 700; color: var(--warning); }
+
+/* Mobile game */
+@media (max-width: 768px) {
+    .game-main { flex-direction: column; }
+    .game-sidebar {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        max-height: 200px;
+    }
+    .game-hand-area { min-height: 100px; padding: 8px 12px; }
+    .card { width: 50px; height: 72px; }
+    .card-center { font-size: 1.4rem; }
+    .card-rank { font-size: 0.7rem; }
+    .card-suit { font-size: 0.6rem; }
+    .hand { gap: 0; }
+    .hand .card { margin-left: -15px; }
+    .hand .card:first-child { margin-left: 0; }
+    .table-felt { border-radius: 20px; border-width: 4px; }
+}

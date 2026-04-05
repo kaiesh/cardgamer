@@ -1,0 +1,14 @@
+{
+    "name": "cardgamer/card-table",
+    "description": "Open Card Table Platform",
+    "require": {
+        "php": ">=8.2",
+        "pusher/pusher-php-server": "^7.2",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "CardTable\\": "src/"
+        }
+    }
+}

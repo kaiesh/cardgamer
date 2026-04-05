@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# API routes -> api/router.php
+RewriteRule ^api/(.*)$ api/router.php [L,QSA]
+
+# Static assets -> serve directly
+RewriteCond %{REQUEST_URI} ^/assets/ [OR]
+RewriteCond %{REQUEST_URI} ^/uploads/
+RewriteRule ^ - [L]
+
+# Everything else -> SPA shell
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
