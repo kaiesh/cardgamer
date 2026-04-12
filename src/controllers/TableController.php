@@ -111,11 +111,11 @@ class TableController {
             errorResponse('Need at least 1 player to start', 'NOT_ENOUGH_PLAYERS');
         }
 
-        // Clone per_player zones. Each prototype is drawn somewhere on the
-        // zone-builder canvas and represents a template for a single player's
-        // layout. We keep prototype sizes as drawn and translate the whole
-        // group so its centroid lands on each player's seat, preserving the
-        // relative positions between prototypes.
+        // Clone per_player zones. Each prototype is drawn on the zone-builder
+        // canvas at whole-table scale and represents a template for a single
+        // player's layout. We fit the bounding box of all prototypes into a
+        // per-seat box, scaling uniformly (preserving aspect ratio), then
+        // translate each cloned group so its centroid sits on the seat.
         $stmt = $db->prepare("SELECT * FROM zones WHERE table_id = ? AND zone_type = 'per_player' AND owner_player_id IS NULL");
         $stmt->execute([$tableId]);
         $protoZones = $stmt->fetchAll();
@@ -131,19 +131,28 @@ class TableController {
                 $maxX = max($maxX, (float) $p['pos_x'] + (float) $p['width']);
                 $maxY = max($maxY, (float) $p['pos_y'] + (float) $p['height']);
             }
-            $cx = ($minX + $maxX) / 2.0;
-            $cy = ($minY + $maxY) / 2.0;
+            $bboxW = max(1.0, $maxX - $minX);
+            $bboxH = max(1.0, $maxY - $minY);
+
+            // Per-seat target box. Uniform scale so the bbox fits inside it
+            // without distortion; never upscale beyond 1.0.
+            $areaW = 38.0;
+            $areaH = 24.0;
+            $scale = min($areaW / $bboxW, $areaH / $bboxH, 1.0);
+            $scaledW = $bboxW * $scale;
+            $scaledH = $bboxH * $scale;
 
             foreach ($protoZones as $proto) {
-                $clonedW = (float) $proto['width'];
-                $clonedH = (float) $proto['height'];
-                $offsetX = (float) $proto['pos_x'] - $cx;
-                $offsetY = (float) $proto['pos_y'] - $cy;
+                $clonedW = (float) $proto['width'] * $scale;
+                $clonedH = (float) $proto['height'] * $scale;
+                // Offset within the scaled bbox, then center the bbox on the seat.
+                $localX = ((float) $proto['pos_x'] - $minX) * $scale;
+                $localY = ((float) $proto['pos_y'] - $minY) * $scale;
 
                 foreach ($players as $i => $player) {
                     $pos = $seatPositions[$i];
-                    $clonedX = $pos['x'] + $offsetX;
-                    $clonedY = $pos['y'] + $offsetY;
+                    $clonedX = $pos['x'] - $scaledW / 2 + $localX;
+                    $clonedY = $pos['y'] - $scaledH / 2 + $localY;
                     // Clamp to table bounds.
                     $clonedX = max(0.0, min(100.0 - $clonedW, $clonedX));
                     $clonedY = max(0.0, min(100.0 - $clonedH, $clonedY));
