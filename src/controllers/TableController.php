@@ -111,10 +111,11 @@ class TableController {
             errorResponse('Need at least 1 player to start', 'NOT_ENOUGH_PLAYERS');
         }
 
-        // Clone per_player zones. Each prototype is positioned in its own
-        // coordinate space on the zone-builder canvas; we scale the bounding
-        // box of all prototypes into a small "seat area" and place a copy
-        // around every player, preserving each prototype's relative layout.
+        // Clone per_player zones. Each prototype is drawn somewhere on the
+        // zone-builder canvas and represents a template for a single player's
+        // layout. We keep prototype sizes as drawn and translate the whole
+        // group so its centroid lands on each player's seat, preserving the
+        // relative positions between prototypes.
         $stmt = $db->prepare("SELECT * FROM zones WHERE table_id = ? AND zone_type = 'per_player' AND owner_player_id IS NULL");
         $stmt->execute([$tableId]);
         $protoZones = $stmt->fetchAll();
@@ -130,25 +131,19 @@ class TableController {
                 $maxX = max($maxX, (float) $p['pos_x'] + (float) $p['width']);
                 $maxY = max($maxY, (float) $p['pos_y'] + (float) $p['height']);
             }
-            $bboxW = max(1.0, $maxX - $minX);
-            $bboxH = max(1.0, $maxY - $minY);
-
-            // Target area for each player's cloned zones.
-            $areaW = 28.0;
-            $areaH = 18.0;
-            $sx = $areaW / $bboxW;
-            $sy = $areaH / $bboxH;
+            $cx = ($minX + $maxX) / 2.0;
+            $cy = ($minY + $maxY) / 2.0;
 
             foreach ($protoZones as $proto) {
-                $localX = ((float) $proto['pos_x'] - $minX) * $sx;
-                $localY = ((float) $proto['pos_y'] - $minY) * $sy;
-                $clonedW = (float) $proto['width'] * $sx;
-                $clonedH = (float) $proto['height'] * $sy;
+                $clonedW = (float) $proto['width'];
+                $clonedH = (float) $proto['height'];
+                $offsetX = (float) $proto['pos_x'] - $cx;
+                $offsetY = (float) $proto['pos_y'] - $cy;
 
                 foreach ($players as $i => $player) {
                     $pos = $seatPositions[$i];
-                    $clonedX = $pos['x'] - $areaW / 2 + $localX;
-                    $clonedY = $pos['y'] - $areaH / 2 + $localY;
+                    $clonedX = $pos['x'] + $offsetX;
+                    $clonedY = $pos['y'] + $offsetY;
                     // Clamp to table bounds.
                     $clonedX = max(0.0, min(100.0 - $clonedW, $clonedX));
                     $clonedY = max(0.0, min(100.0 - $clonedH, $clonedY));
