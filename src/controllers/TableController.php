@@ -111,35 +111,68 @@ class TableController {
             errorResponse('Need at least 1 player to start', 'NOT_ENOUGH_PLAYERS');
         }
 
-        // Clone per_player zones
+        // Clone per_player zones. Each prototype is positioned in its own
+        // coordinate space on the zone-builder canvas; we scale the bounding
+        // box of all prototypes into a small "seat area" and place a copy
+        // around every player, preserving each prototype's relative layout.
         $stmt = $db->prepare("SELECT * FROM zones WHERE table_id = ? AND zone_type = 'per_player' AND owner_player_id IS NULL");
         $stmt->execute([$tableId]);
         $protoZones = $stmt->fetchAll();
 
         $seatPositions = self::getSeatPositions(count($players));
 
-        foreach ($protoZones as $proto) {
-            foreach ($players as $i => $player) {
-                $pos = $seatPositions[$i];
-                $db->prepare("
-                    INSERT INTO zones (table_id, label, zone_type, owner_player_id, layout_mode, flip_visibility, pos_x, pos_y, width, height, color, z_order)
-                    VALUES (?, ?, 'per_player', ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ")->execute([
-                    $tableId,
-                    $proto['label'],
-                    $player['id'],
-                    $proto['layout_mode'],
-                    $proto['flip_visibility'],
-                    $pos['x'] + ($proto['pos_x'] * 0.15),
-                    $pos['y'] + ($proto['pos_y'] * 0.15),
-                    $proto['width'] * 0.8,
-                    $proto['height'] * 0.8,
-                    $proto['color'],
-                    $proto['z_order'],
-                ]);
+        if (!empty($protoZones)) {
+            $minX = PHP_FLOAT_MAX; $minY = PHP_FLOAT_MAX;
+            $maxX = -PHP_FLOAT_MAX; $maxY = -PHP_FLOAT_MAX;
+            foreach ($protoZones as $p) {
+                $minX = min($minX, (float) $p['pos_x']);
+                $minY = min($minY, (float) $p['pos_y']);
+                $maxX = max($maxX, (float) $p['pos_x'] + (float) $p['width']);
+                $maxY = max($maxY, (float) $p['pos_y'] + (float) $p['height']);
             }
-            // Remove prototype
-            $db->prepare('DELETE FROM zones WHERE id = ?')->execute([$proto['id']]);
+            $bboxW = max(1.0, $maxX - $minX);
+            $bboxH = max(1.0, $maxY - $minY);
+
+            // Target area for each player's cloned zones.
+            $areaW = 28.0;
+            $areaH = 18.0;
+            $sx = $areaW / $bboxW;
+            $sy = $areaH / $bboxH;
+
+            foreach ($protoZones as $proto) {
+                $localX = ((float) $proto['pos_x'] - $minX) * $sx;
+                $localY = ((float) $proto['pos_y'] - $minY) * $sy;
+                $clonedW = (float) $proto['width'] * $sx;
+                $clonedH = (float) $proto['height'] * $sy;
+
+                foreach ($players as $i => $player) {
+                    $pos = $seatPositions[$i];
+                    $clonedX = $pos['x'] - $areaW / 2 + $localX;
+                    $clonedY = $pos['y'] - $areaH / 2 + $localY;
+                    // Clamp to table bounds.
+                    $clonedX = max(0.0, min(100.0 - $clonedW, $clonedX));
+                    $clonedY = max(0.0, min(100.0 - $clonedH, $clonedY));
+
+                    $db->prepare("
+                        INSERT INTO zones (table_id, label, zone_type, owner_player_id, layout_mode, flip_visibility, pos_x, pos_y, width, height, color, z_order)
+                        VALUES (?, ?, 'per_player', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ")->execute([
+                        $tableId,
+                        $proto['label'],
+                        $player['id'],
+                        $proto['layout_mode'],
+                        $proto['flip_visibility'],
+                        $clonedX,
+                        $clonedY,
+                        $clonedW,
+                        $clonedH,
+                        $proto['color'],
+                        $proto['z_order'],
+                    ]);
+                }
+                // Remove prototype
+                $db->prepare('DELETE FROM zones WHERE id = ?')->execute([$proto['id']]);
+            }
         }
 
         // Generate cards
