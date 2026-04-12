@@ -27,9 +27,10 @@ const store = {
         }
     },
 
-    emit(key) {
+    emit(key, ...args) {
         if (this._listeners.has(key)) {
-            this._listeners.get(key).forEach(fn => fn(this[key]));
+            const payload = args.length > 0 ? args[0] : this[key];
+            this._listeners.get(key).forEach(fn => fn(payload));
         }
     },
 };
